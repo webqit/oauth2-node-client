@@ -6,9 +6,9 @@ import Url from 'url';
 import Request from 'request';
 import Sessions from 'client-sessions';
 import Jsonwebtoken from 'jsonwebtoken';
-import _intersect from '@onephrase/util/arr/intersect.js';
-import _arrFrom from '@onephrase/util/arr/from.js';
-import _promise from '@onephrase/util/js/promise.js';
+import _intersect from '@webqit/util/arr/intersect.js';
+import _arrFrom from '@webqit/util/arr/from.js';
+import _promise from '@webqit/util/js/promise.js';
 
 /**
  * OAuth util class
@@ -207,7 +207,9 @@ export default class OAuth2CodeFlow {
                 code: url.query.code,                       // not needed for type refresh_token
                 redirect_uri: this.params.callbackURL,      // not needed for type refresh_token
                                                             // refresh_token: the body.refresh_token in previous request
-            }
+            },
+            //headers: {'content-type': 'application/x-www-form-urlencoded'}, body: 'gdgdgd=333222', //or form: {}
+            //headers: {'content-type': 'application/json'}, body: '{"Hey":"Hello"}',
         };
         var data = await _promise((resolve, reject) => {
             Request(options, (error, response, body) => {
