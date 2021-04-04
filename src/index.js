@@ -24,11 +24,11 @@
       */
      static createMiddleware(params) {
          var sessionMiddleware = Sessions({
-             cookieName: 'authSession',      // cookie name dictates the key name added to the request object
-             secret: 'bla343434343rgadeeblargblarg',  // should be a large unguessable string
-             duration: 24 * 60 * 60 * 1000,  // how long the session will stay valid in ms
-             activeDuration: 1000 * 60 * 5   // if expiresIn < activeDuration, the session will be extended by activeDuration milliseconds
-         });
+            cookieName: 'authSession',         // cookie name dictates the key name added to the request object
+            secret: params.sesskey,            // should be a large unguessable string
+            duration: 24 * 60 * 60 * 1000,     // how long the session will stay valid in ms
+            activeDuration: 1000 * 60 * 5      // if expiresIn < activeDuration, the session will be extended by activeDuration milliseconds
+        });
          return async (request, response, next) => {
              return await sessionMiddleware(request, response, async () => {
                  request.oauth = new OAuth2CodeFlow(request, response, params);
@@ -252,7 +252,7 @@
              credentials.identity = (data.id_token || {}).payload;
          }
          this.credentials = credentials;
-         if (this.request.authSession && this.params.sessions !== false) {
+         if (this.request.authSession && this.params.sesskey) {
              this.request.authSession.oauth = credentials;
          }
          // Redirect back to initiator URL
