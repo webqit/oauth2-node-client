@@ -63,9 +63,9 @@
          this.response = response;
          this.params = params;
          this.endpoints = {
-             loginUrl: params.client.baseUrl + params.endpoints.login,
-             tokenUrl: params.client.baseUrl + params.endpoints.token,
-             logoutUrl: params.client.baseUrl + params.endpoints.logout,
+             loginUrl: params.endpoints.baseUrl + params.endpoints.login,
+             tokenUrl: params.endpoints.baseUrl + params.endpoints.token,
+             logoutUrl: params.endpoints.baseUrl + params.endpoints.logout,
          };
          this.callbacks = {
              loginUrl: params.callbacks.baseUrl + params.callbacks.login,
