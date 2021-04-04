@@ -41,18 +41,18 @@
       * Creates an auth API
       * 
       * @param object params 
-      *      client,
-      *          id,
-      *          secret,
+      *      clientId,
+      *      clientSecret,
+      *      endpoints,
       *          baseURL,
-      *          loginEndpoint,
-      *          tokenEndpoint,
-      *          logoutEndpoint,
+      *          login,
+      *          token,
+      *          logout,
       *      callbacks
       *          baseURL,
-      *          loginEndpoint,
-      *          logoutEndpoint
-      *      sessions: true|false
+      *          login,
+      *          logout
+      *      sesskey,
       * @param object request
       * @param object response
       * '
@@ -62,16 +62,14 @@
          this.request = request;
          this.response = response;
          this.params = params;
-         this.client = {
-             id: params.client.id,
-             secret: params.client.secret,
-             loginUrl: params.client.baseUrl + params.client.loginEndpoint,
-             tokenUrl: params.client.baseUrl + params.client.tokenEndpoint,
-             logoutUrl: params.client.baseUrl + params.client.logoutEndpoint,
+         this.endpoints = {
+             loginUrl: params.client.baseUrl + params.endpoints.login,
+             tokenUrl: params.client.baseUrl + params.endpoints.token,
+             logoutUrl: params.client.baseUrl + params.endpoints.logout,
          };
          this.callbacks = {
-             loginUrl: params.callbacks.baseUrl + params.callbacks.loginEndpoint,
-             logoutUrl: params.callbacks.baseUrl + params.callbacks.logoutEndpoint,
+             loginUrl: params.callbacks.baseUrl + params.callbacks.login,
+             logoutUrl: params.callbacks.baseUrl + params.callbacks.logout,
          };
          this.credentials = this.request.authSession.oauth;
      }
@@ -139,9 +137,9 @@
          if (this.request.authSession) {
              delete this.request.authSession.oauth;
          }
-         if (fromSource && this.client.logoutUrl) {
-             var rdr = this.client.logoutUrl
-             + '?client_id=' + this.client.id
+         if (fromSource && this.endpoints.logoutUrl) {
+             var rdr = this.endpoints.logoutUrl
+             + '?client_id=' + this.params.clientId
              + '&returnTo=' + this.callbacks.logoutUrl;
              this.response.writeHead(302, {Location: rdr});
              this.response.end();
@@ -169,9 +167,9 @@
                  initiatorURL: this.request.url,
              };
          }
-         var rdr = this.client.loginUrl
+         var rdr = this.endpoints.loginUrl
              + '?response_type=code'
-             + '&client_id=' + this.client.id
+             + '&client_id=' + this.params.clientId
              + '&redirect_uri=' + this.callbacks.loginUrl
              + (scopes.length ? '&scope=' + _arrFrom(scopes).join('%20') : '') // "offline_access" - to include refresh_token
              + (audience ? '&audience=' + audience : '')
@@ -212,12 +210,12 @@
  
          var options = {
              method: 'POST',
-             url: this.client.tokenUrl,
+             url: this.endpoints.tokenUrl,
              headers: {'content-type': 'application/x-www-form-urlencoded'},
              form: {
                  grant_type: 'authorization_code', // or refresh_token
-                 client_id: this.client.id,
-                 client_secret: this.client.secret,    // not needed for type refresh_token
+                 client_id: this.params.clientId,
+                 client_secret: this.params.clientSecret,    // not needed for type refresh_token
                  code: url.query.code,                       // not needed for type refresh_token
                  redirect_uri: this.callbacks.loginUrl,      // not needed for type refresh_token
                                                              // refresh_token: the body.refresh_token in previous request
@@ -239,9 +237,9 @@
          if (data.id_token) {
              data.id_token = Jsonwebtoken.decode(data.id_token, {complete: true});
              // Verify signing algorithm - "data.id_token.header.alg" - HS256, RS256
-             // Verify token audience claims - "data.id_token.payload.aud" - roughly this.client.id
+             // Verify token audience claims - "data.id_token.payload.aud" - roughly this.params.clientId
              // Verify permissions (scopes) - "data.id_token.payload.scopes" - from the initiator request
-             // Verify issuer claims - "data.id_token.payload.iss" - usually the domain part in this.client.loginUrl
+             // Verify issuer claims - "data.id_token.payload.iss" - usually the domain part in this.endpoints.loginUrl
              // Verify expiration - "data.id_token.payload.exp" - must be after the current date/time
              // Starts a login session
              delete credentials.id_token;
